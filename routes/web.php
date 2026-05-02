@@ -43,6 +43,7 @@ Route::prefix('data-room')->name('data-room.')->group(function () {
 
     // Comments on artifacts
     Route::post('/{artifact:slug}/comments', [CommentController::class, 'store'])->middleware('auth')->name('comments.store');
+    Route::put('/comments/{comment}', [CommentController::class, 'update'])->middleware('auth')->name('comments.update');
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->middleware('auth')->name('comments.destroy');
 });
 
@@ -50,13 +51,16 @@ Route::prefix('data-room')->name('data-room.')->group(function () {
 Route::prefix('forum')->name('forum.')->middleware('auth')->group(function () {
     Route::get('/', [ForumController::class, 'index'])->name('index');
     Route::post('/', [ForumController::class, 'storeCategory'])->name('category.store');
+    Route::get('/threads/{thread}/edit', [ThreadController::class, 'edit'])->name('thread.edit');
+    Route::put('/threads/{thread}', [ThreadController::class, 'update'])->name('thread.update');
+    Route::delete('/threads/{thread}', [ThreadController::class, 'destroy'])->name('thread.destroy');
+    Route::put('/posts/{post}', [PostController::class, 'update'])->name('post.update');
+    Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('post.destroy');
     Route::get('/{category:slug}', [ForumController::class, 'category'])->name('category');
     Route::get('/{category:slug}/new', [ThreadController::class, 'create'])->name('thread.create');
     Route::post('/{category:slug}/new', [ThreadController::class, 'store'])->name('thread.store');
     Route::get('/{category:slug}/{thread:slug}', [ThreadController::class, 'show'])->name('thread');
-    Route::delete('/threads/{thread}', [ThreadController::class, 'destroy'])->name('thread.destroy');
     Route::post('/{category:slug}/{thread:slug}/reply', [PostController::class, 'store'])->name('post.store');
-    Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('post.destroy');
 });
 
 // Admin

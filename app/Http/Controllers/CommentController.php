@@ -28,6 +28,19 @@ class CommentController extends Controller
         return back()->with('success', 'Comment added.');
     }
 
+    public function update(Request $request, Comment $comment)
+    {
+        abort_if(!auth()->user()->isAdmin() && $comment->user_id !== auth()->id(), 403);
+
+        $validated = $request->validate([
+            'body' => 'required|string|min:2|max:2000',
+        ]);
+
+        $comment->update(['body' => $validated['body']]);
+
+        return back()->with('success', 'Comment updated.');
+    }
+
     public function destroy(Comment $comment)
     {
         abort_if(!auth()->user()->isAdmin() && $comment->user_id !== auth()->id(), 403);

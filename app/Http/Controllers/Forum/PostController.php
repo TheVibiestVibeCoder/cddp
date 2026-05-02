@@ -38,6 +38,19 @@ class PostController extends Controller
             ->with('success', 'Reply posted.');
     }
 
+    public function update(Request $request, ForumPost $post)
+    {
+        abort_if(!auth()->user()->isAdmin() && $post->user_id !== auth()->id(), 403);
+
+        $validated = $request->validate([
+            'body' => 'required|string|min:2',
+        ]);
+
+        $post->update(['body' => $validated['body']]);
+
+        return back()->with('success', 'Post updated.');
+    }
+
     public function destroy(ForumPost $post)
     {
         abort_if(!auth()->user()->isAdmin() && $post->user_id !== auth()->id(), 403);

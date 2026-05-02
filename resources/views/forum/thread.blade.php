@@ -12,7 +12,9 @@
 
     <div class="grid grid-cols-1 xl:grid-cols-4 gap-8">
         <!-- Main column -->
-        <div class="xl:col-span-3 space-y-4" x-data="{ replyTo: null, replyName: '' }" @reply-to.window="replyTo = $event.detail.parentId; replyName = $event.detail.name; $nextTick(() => document.getElementById('reply-box').scrollIntoView({behavior:'smooth'}))">
+        <div class="xl:col-span-3 space-y-4"
+             x-data="{ replyTo: null, replyName: '', editingPost: null }"
+             @reply-to.window="replyTo = $event.detail.parentId; replyName = $event.detail.name; editingPost = null; $nextTick(() => document.getElementById('reply-box').scrollIntoView({behavior:'smooth'}))">
 
             <!-- Thread header -->
             <div class="card overflow-hidden">
@@ -63,11 +65,14 @@
                         </span>
                     </div>
                     @if(auth()->user()->isAdmin() || $thread->user_id === auth()->id())
-                    <form method="POST" action="{{ route('forum.thread.destroy', $thread) }}"
-                          onsubmit="return confirm('Delete this thread? All replies will be lost.')">
-                        @csrf @method('DELETE')
-                        <button type="submit" class="text-red-500 hover:text-red-700 transition-colors">Delete thread</button>
-                    </form>
+                    <div class="flex items-center gap-4">
+                        <a href="{{ route('forum.thread.edit', $thread) }}" class="hover:text-ink-950 transition-colors">Edit thread</a>
+                        <form method="POST" action="{{ route('forum.thread.destroy', $thread) }}"
+                              onsubmit="return confirm('Delete this thread? All replies will be lost.')">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="text-red-500 hover:text-red-700 transition-colors">Delete thread</button>
+                        </form>
+                    </div>
                     @endif
                 </div>
             </div>
@@ -87,22 +92,67 @@
                                 <span class="badge bg-emerald-100 text-emerald-700 text-xs">Solution</span>
                                 @endif
                             </div>
-                            <div class="article-body">
+
+                            <!-- Read view -->
+                            <div class="article-body" x-show="editingPost !== {{ $post->id }}">
                                 {!! nl2br(e($post->body)) !!}
                             </div>
 
-                            <!-- Replies to this post -->
+                            <!-- Inline edit form -->
+                            <form x-show="editingPost === {{ $post->id }}" x-cloak
+                                  method="POST" action="{{ route('forum.post.update', $post) }}">
+                                @csrf @method('PUT')
+                                <textarea name="body" rows="6"
+                                          class="input resize-y w-full font-mono text-sm">{{ $post->body }}</textarea>
+                                <div class="mt-2 flex items-center justify-end gap-2">
+                                    <button type="button" @click="editingPost = null" class="btn-secondary btn-sm">Cancel</button>
+                                    <button type="submit" class="btn-primary btn-sm">Save</button>
+                                </div>
+                            </form>
+
+                            <!-- Nested replies -->
                             @if($post->replies->isNotEmpty())
-                            <div class="mt-4 space-y-3 pl-4 border-l-2 border-ink-100">
+                            <div class="mt-4 space-y-3 pl-4 border-l-2 border-ink-100"
+                                 x-show="editingPost !== {{ $post->id }}">
                                 @foreach($post->replies as $reply)
-                                <div class="flex items-start gap-3">
+                                <div class="flex items-start gap-3" id="post-{{ $reply->id }}">
                                     <img src="{{ $reply->user->avatar_url }}" class="w-7 h-7 rounded-full flex-shrink-0" alt="">
-                                    <div class="flex-1">
-                                        <div class="flex items-baseline gap-2 mb-1">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-baseline gap-2 mb-1 flex-wrap">
                                             <span class="text-xs font-semibold text-ink-950">{{ $reply->user->name }}</span>
                                             <span class="text-[11px] text-ink-400">{{ $reply->created_at->diffForHumans() }}</span>
                                         </div>
-                                        <div class="text-sm text-ink-700 leading-relaxed">{{ $reply->body }}</div>
+
+                                        <!-- Reply read view -->
+                                        <div class="text-sm text-ink-700 leading-relaxed"
+                                             x-show="editingPost !== {{ $reply->id }}">{{ $reply->body }}</div>
+
+                                        <!-- Reply inline edit form -->
+                                        <form x-show="editingPost === {{ $reply->id }}" x-cloak
+                                              method="POST" action="{{ route('forum.post.update', $reply) }}">
+                                            @csrf @method('PUT')
+                                            <textarea name="body" rows="3"
+                                                      class="input resize-y w-full font-mono text-sm mt-1">{{ $reply->body }}</textarea>
+                                            <div class="mt-1.5 flex items-center justify-end gap-2">
+                                                <button type="button" @click="editingPost = null" class="btn-secondary btn-sm">Cancel</button>
+                                                <button type="submit" class="btn-primary btn-sm">Save</button>
+                                            </div>
+                                        </form>
+
+                                        @if(auth()->user()->isAdmin() || $reply->user_id === auth()->id())
+                                        <div class="flex items-center gap-3 mt-1.5">
+                                            <button type="button"
+                                                    x-show="editingPost !== {{ $reply->id }}"
+                                                    @click="editingPost = {{ $reply->id }}"
+                                                    class="text-[11px] text-ink-400 hover:text-ink-950 transition-colors">Edit</button>
+                                            <form method="POST" action="{{ route('forum.post.destroy', $reply) }}"
+                                                  onsubmit="return confirm('Delete this reply?')"
+                                                  x-show="editingPost !== {{ $reply->id }}">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" class="text-[11px] text-red-500 hover:text-red-700 transition-colors">Delete</button>
+                                            </form>
+                                        </div>
+                                        @endif
                                     </div>
                                 </div>
                                 @endforeach
@@ -115,17 +165,25 @@
                             @if(auth()->user()->canPost() && !$thread->is_locked)
                             <button type="button"
                                     class="text-xs text-ink-500 hover:text-ink-950 transition-colors"
-                                    @click="replyTo = {{ $post->id }}; replyName = '{{ $post->user->name }}'; $nextTick(() => document.getElementById('reply-box').scrollIntoView({behavior:'smooth'}))">
+                                    x-show="editingPost !== {{ $post->id }}"
+                                    @click="replyTo = {{ $post->id }}; replyName = '{{ addslashes($post->user->name) }}'; $nextTick(() => document.getElementById('reply-box').scrollIntoView({behavior:'smooth'}))">
                                 Reply
                             </button>
                             @endif
                         </div>
                         @if(auth()->user()->isAdmin() || $post->user_id === auth()->id())
-                        <form method="POST" action="{{ route('forum.post.destroy', $post) }}"
-                              onsubmit="return confirm('Delete this reply?')">
-                            @csrf @method('DELETE')
-                            <button type="submit" class="text-xs text-red-500 hover:text-red-700 transition-colors">Delete</button>
-                        </form>
+                        <div class="flex items-center gap-3">
+                            <button type="button"
+                                    x-show="editingPost !== {{ $post->id }}"
+                                    @click="editingPost = {{ $post->id }}"
+                                    class="text-xs text-ink-500 hover:text-ink-950 transition-colors">Edit</button>
+                            <form method="POST" action="{{ route('forum.post.destroy', $post) }}"
+                                  onsubmit="return confirm('Delete this reply?')"
+                                  x-show="editingPost !== {{ $post->id }}">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="text-xs text-red-500 hover:text-red-700 transition-colors">Delete</button>
+                            </form>
+                        </div>
                         @endif
                     </div>
                 </div>
@@ -148,7 +206,6 @@
                         @csrf
                         <input type="hidden" name="parent_id" :value="replyTo">
 
-                        <!-- Reply context badge -->
                         <div x-show="replyTo" x-cloak class="flex items-center gap-2 mb-3 p-2.5 bg-ink-50 rounded-lg text-sm text-ink-600 border border-ink-200">
                             <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
                             Replying to <strong x-text="replyName"></strong>

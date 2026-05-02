@@ -77,6 +77,53 @@ class ThreadController extends Controller
             ->with('success', 'Thread created.');
     }
 
+    public function edit(ForumThread $thread)
+    {
+        abort_if(!auth()->user()->isAdmin() && $thread->user_id !== auth()->id(), 403);
+        $tags = Tag::orderBy('name')->get();
+        return view('forum.edit-thread', compact('thread', 'tags'));
+    }
+
+    public function update(Request $request, ForumThread $thread)
+    {
+        abort_if(!auth()->user()->isAdmin() && $thread->user_id !== auth()->id(), 403);
+
+        $validated = $request->validate([
+            'title'     => 'required|string|max:255',
+            'body'      => 'required|string|min:10',
+            'tags'      => 'nullable|array',
+            'tags.*'    => 'exists:tags,id',
+            'new_tags'  => 'nullable|string',
+            'is_pinned' => 'boolean',
+            'is_locked' => 'boolean',
+        ]);
+
+        $thread->update([
+            'title'     => $validated['title'],
+            'body'      => $validated['body'],
+            'is_pinned' => auth()->user()->isAdmin() ? $request->boolean('is_pinned') : $thread->is_pinned,
+            'is_locked' => auth()->user()->isAdmin() ? $request->boolean('is_locked') : $thread->is_locked,
+        ]);
+
+        $tagIds = $validated['tags'] ?? [];
+        if (!empty($validated['new_tags'])) {
+            foreach (explode(',', $validated['new_tags']) as $tagName) {
+                $tagName = trim($tagName);
+                if ($tagName) {
+                    $tag = Tag::firstOrCreate(
+                        ['slug' => Str::slug($tagName)],
+                        ['name' => $tagName, 'slug' => Str::slug($tagName)]
+                    );
+                    $tagIds[] = $tag->id;
+                }
+            }
+        }
+        $thread->tags()->sync($tagIds);
+
+        return redirect()->route('forum.thread', [$thread->category, $thread])
+            ->with('success', 'Thread updated.');
+    }
+
     public function destroy(ForumThread $thread)
     {
         abort_if(!auth()->user()->isAdmin() && $thread->user_id !== auth()->id(), 403);
