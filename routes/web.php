@@ -49,6 +49,7 @@ Route::prefix('data-room')->name('data-room.')->group(function () {
 // Forum
 Route::prefix('forum')->name('forum.')->middleware('auth')->group(function () {
     Route::get('/', [ForumController::class, 'index'])->name('index');
+    Route::post('/', [ForumController::class, 'storeCategory'])->name('category.store');
     Route::get('/{category:slug}', [ForumController::class, 'category'])->name('category');
     Route::get('/{category:slug}/new', [ThreadController::class, 'create'])->name('thread.create');
     Route::post('/{category:slug}/new', [ThreadController::class, 'store'])->name('thread.store');

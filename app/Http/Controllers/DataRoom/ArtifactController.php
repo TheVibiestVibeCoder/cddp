@@ -111,7 +111,15 @@ class ArtifactController extends Controller
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            $filePath = $file->store('artifacts', 'public');
+            Storage::disk('public')->makeDirectory('artifacts');
+            try {
+                $filePath = $file->store('artifacts', 'public');
+            } catch (\Exception $e) {
+                return back()->withInput()->withErrors(['file' => 'File upload failed. Check server storage permissions and try again.']);
+            }
+            if (!$filePath) {
+                return back()->withInput()->withErrors(['file' => 'File could not be saved. Check server storage permissions.']);
+            }
             $fileName = $file->getClientOriginalName();
             $fileSize = $this->formatFileSize($file->getSize());
             $fileMime = $file->getMimeType();
@@ -188,11 +196,20 @@ class ArtifactController extends Controller
         ]);
 
         if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            Storage::disk('public')->makeDirectory('artifacts');
+            try {
+                $newPath = $file->store('artifacts', 'public');
+            } catch (\Exception $e) {
+                return back()->withInput()->withErrors(['file' => 'File upload failed. Check server storage permissions and try again.']);
+            }
+            if (!$newPath) {
+                return back()->withInput()->withErrors(['file' => 'File could not be saved. Check server storage permissions.']);
+            }
             if ($artifact->file_path) {
                 Storage::disk('public')->delete($artifact->file_path);
             }
-            $file = $request->file('file');
-            $validated['file_path'] = $file->store('artifacts', 'public');
+            $validated['file_path'] = $newPath;
             $validated['file_name'] = $file->getClientOriginalName();
             $validated['file_size'] = $this->formatFileSize($file->getSize());
             $validated['file_mime'] = $file->getMimeType();

@@ -1,11 +1,19 @@
 <x-app-layout>
     <x-slot name="title">Forum</x-slot>
 
+    <div x-data="{ createForum: false }" @keydown.escape.window="createForum = false">
+
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
             <h1 class="text-2xl font-bold text-ink-950 tracking-tight">Forum</h1>
             <p class="text-sm text-ink-500 mt-0.5">Community discussions and exchange</p>
         </div>
+        @if(auth()->user()->canPost())
+        <button @click="createForum = true" class="btn-primary flex-shrink-0">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+            New Forum
+        </button>
+        @endif
     </div>
 
     <!-- Categories -->
@@ -98,4 +106,69 @@
         </div>
     </div>
     @endif
+
+    <!-- Create Forum Modal -->
+    @if(auth()->user()->canPost())
+    <div x-show="createForum" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/50" @click="createForum = false"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md" @click.stop
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100">
+            <div class="px-6 py-5 border-b border-ink-100 flex items-center justify-between">
+                <h2 class="text-base font-semibold text-ink-950">Create New Forum</h2>
+                <button @click="createForum = false" class="p-1 rounded-lg hover:bg-ink-100 text-ink-400 hover:text-ink-950 transition-colors">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            <form method="POST" action="{{ route('forum.category.store') }}" class="p-6 space-y-4">
+                @csrf
+                <div>
+                    <label class="label">Name <span class="text-red-500">*</span></label>
+                    <input type="text" name="name" class="input @error('name') input-error @enderror"
+                           placeholder="e.g. Research Methods" required maxlength="100"
+                           value="{{ old('name') }}">
+                    @error('name')<p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <label class="label">Description</label>
+                    <input type="text" name="description" class="input"
+                           placeholder="What is this forum about?" maxlength="500"
+                           value="{{ old('description') }}">
+                </div>
+                <div x-data="{ icon: '{{ old('icon', '💬') }}' }">
+                    <label class="label">Icon</label>
+                    <div class="flex flex-wrap gap-2 mb-2">
+                        @foreach(['💬','📢','🔬','📰','🌐','🗂️','📊','🤝','⚠️','🔍','📝','💡'] as $emoji)
+                        <button type="button"
+                                @click="icon = '{{ $emoji }}'; $refs.iconInput.value = '{{ $emoji }}'"
+                                class="w-9 h-9 rounded-lg border border-ink-200 hover:border-ink-950 text-lg transition-colors"
+                                :class="icon === '{{ $emoji }}' ? 'border-ink-950 bg-ink-50' : ''">{{ $emoji }}</button>
+                        @endforeach
+                    </div>
+                    <input type="hidden" name="icon" x-ref="iconInput" :value="icon">
+                </div>
+                <div x-data="{ color: '{{ old('color', '#18181b') }}' }">
+                    <label class="label">Color</label>
+                    <div class="flex flex-wrap gap-2">
+                        @foreach(['#18181b','#1d4ed8','#15803d','#b91c1c','#7c3aed','#0891b2','#c2410c','#be185d'] as $c)
+                        <button type="button"
+                                @click="color = '{{ $c }}'; $refs.colorInput.value = '{{ $c }}'"
+                                class="w-8 h-8 rounded-lg border-2 transition-all"
+                                :class="color === '{{ $c }}' ? 'border-ink-950 scale-110' : 'border-transparent'"
+                                style="background-color: {{ $c }}"></button>
+                        @endforeach
+                    </div>
+                    <input type="hidden" name="color" x-ref="colorInput" :value="color">
+                </div>
+                <div class="flex items-center justify-end gap-3 pt-2">
+                    <button type="button" @click="createForum = false" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary">Create Forum</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    @endif
+
+    </div>{{-- close x-data --}}
 </x-app-layout>
