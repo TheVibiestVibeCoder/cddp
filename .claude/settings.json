@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php --version)",
+      "Bash(npm --version)",
+      "Read(//c/c/Users/schwi/my-project/**)",
+      "Bash(composer require *)",
+      "Bash(php artisan *)",
+      "Bash(npm run *)",
+      "Bash(npm install *)",
+      "Bash(php -r ' *)"
+    ]
+  }
+}

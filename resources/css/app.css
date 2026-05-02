@@ -1,0 +1,132 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    html {
+        @apply antialiased scroll-smooth;
+    }
+    body {
+        @apply bg-ink-50 text-ink-950 font-sans;
+    }
+    h1, h2, h3, h4, h5, h6 {
+        @apply font-semibold tracking-tight;
+    }
+}
+
+@layer components {
+    /* Buttons */
+    .btn {
+        @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-1;
+    }
+    .btn-primary {
+        @apply btn bg-ink-950 text-white hover:bg-ink-800 focus:ring-ink-500;
+    }
+    .btn-secondary {
+        @apply btn bg-white text-ink-950 border border-ink-200 hover:bg-ink-50 focus:ring-ink-300;
+    }
+    .btn-ghost {
+        @apply btn text-ink-600 hover:text-ink-950 hover:bg-ink-100 focus:ring-ink-300;
+    }
+    .btn-danger {
+        @apply btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-400;
+    }
+    .btn-sm {
+        @apply px-3 py-1.5 text-xs;
+    }
+    .btn-lg {
+        @apply px-6 py-3 text-base;
+    }
+
+    /* Form inputs */
+    .input {
+        @apply w-full rounded-lg border border-ink-200 bg-white px-4 py-2.5 text-sm text-ink-950 placeholder:text-ink-400 focus:border-ink-950 focus:ring-1 focus:ring-ink-950 transition-colors;
+    }
+    .input-error {
+        @apply border-red-400 focus:border-red-500 focus:ring-red-400;
+    }
+    .label {
+        @apply block text-xs font-medium text-ink-700 mb-1.5 uppercase tracking-wider;
+    }
+
+    /* Cards */
+    .card {
+        @apply bg-white rounded-xl border border-ink-200 overflow-hidden;
+    }
+    .card-hover {
+        @apply card hover:border-ink-400 hover:shadow-md transition-all duration-200;
+    }
+
+    /* Badges */
+    .badge {
+        @apply inline-flex items-center px-2.5 py-0.5 text-xs font-medium rounded-full;
+    }
+    .badge-default {
+        @apply badge bg-ink-100 text-ink-700;
+    }
+    .badge-dark {
+        @apply badge bg-ink-950 text-white;
+    }
+    .badge-outline {
+        @apply badge border border-ink-300 text-ink-600 bg-transparent;
+    }
+
+    /* Navigation */
+    .nav-link {
+        @apply flex items-center gap-2 px-3 py-2 text-sm font-medium text-ink-600 rounded-lg hover:text-ink-950 hover:bg-ink-100 transition-colors;
+    }
+    .nav-link-active {
+        @apply nav-link text-ink-950 bg-ink-100;
+    }
+
+    /* Section divider */
+    .section-label {
+        @apply text-xs font-semibold uppercase tracking-[0.15em] text-ink-400;
+    }
+
+    /* Data table */
+    .data-table {
+        @apply w-full text-sm;
+    }
+    .data-table th {
+        @apply text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-ink-500 border-b border-ink-200 bg-ink-50;
+    }
+    .data-table td {
+        @apply px-4 py-3.5 border-b border-ink-100 text-ink-800;
+    }
+    .data-table tr:last-child td {
+        @apply border-b-0;
+    }
+    .data-table tr:hover td {
+        @apply bg-ink-50;
+    }
+
+    /* Alert flash messages */
+    .alert-success {
+        @apply flex items-center gap-2 px-4 py-3 text-sm bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-lg;
+    }
+    .alert-error {
+        @apply flex items-center gap-2 px-4 py-3 text-sm bg-red-50 text-red-800 border border-red-200 rounded-lg;
+    }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { border-radius: 9999px; background: #bdbdbd; }
+::-webkit-scrollbar-thumb:hover { background: #989898; }
+
+/* Article/forum post body */
+.article-body { line-height: 1.8; color: #464646; font-size: 0.9375rem; }
+.article-body p { margin-bottom: 1rem; }
+.article-body ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
+.article-body ol { list-style: decimal; padding-left: 1.5rem; margin-bottom: 1rem; }
+.article-body a { text-decoration: underline; }
+.article-body strong { font-weight: 600; color: #0a0a0a; }
+.article-body blockquote { border-left: 3px solid #bdbdbd; padding-left: 1rem; color: #656565; font-style: italic; margin: 1.5rem 0; }
+.article-body pre { background: #0a0a0a; color: #e2e8f0; border-radius: 0.5rem; padding: 1rem; overflow-x: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; margin-bottom: 1rem; }
+.article-body code:not(pre code) { background: #efefef; padding: 0.1em 0.4em; border-radius: 0.25rem; font-family: 'JetBrains Mono', monospace; font-size: 0.875em; }
+
+[x-cloak] { display: none !important; }
