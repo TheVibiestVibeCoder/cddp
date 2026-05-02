@@ -134,7 +134,7 @@
                 <svg class="w-5 h-5 text-ink-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
             </button>
             <span class="text-sm font-bold text-ink-950 tracking-tight">CDDP</span>
-            <img src="{{ auth()->user()->avatar_url }}" class="w-8 h-8 rounded-full border border-ink-200" alt="">
+            <img src="{{ auth()->user()->avatar_url }}" class="w-8 h-8 rounded-full object-cover border border-ink-200" alt="">
         </header>
 
         <!-- Flash messages -->

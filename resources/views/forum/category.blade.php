@@ -81,7 +81,7 @@
                 @endif
 
                 <div class="flex items-center gap-2 mt-1.5 text-[11px] text-ink-400">
-                    <img src="{{ $thread->user->avatar_url }}" class="w-4 h-4 rounded-full" alt="">
+                    <img src="{{ $thread->user->avatar_url }}" class="w-4 h-4 rounded-full object-cover" alt="">
                     <span>{{ $thread->user->name }}</span>
                     <span>&middot;</span>
                     <span>{{ $thread->created_at->diffForHumans() }}</span>

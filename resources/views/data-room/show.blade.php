@@ -50,7 +50,7 @@
                 <!-- Meta bar -->
                 <div class="px-6 py-4 border-b border-ink-100 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-ink-500">
                     <div class="flex items-center gap-2">
-                        <img src="{{ $artifact->user->avatar_url }}" class="w-5 h-5 rounded-full" alt="">
+                        <img src="{{ $artifact->user->avatar_url }}" class="w-5 h-5 rounded-full object-cover" alt="">
                         <span>{{ $artifact->user->name }}</span>
                     </div>
                     <span class="flex items-center gap-1">
@@ -156,7 +156,7 @@
                         </div>
 
                         <div class="flex items-start gap-3">
-                            <img src="{{ auth()->user()->avatar_url }}" class="w-8 h-8 rounded-full flex-shrink-0 mt-1" alt="">
+                            <img src="{{ auth()->user()->avatar_url }}" class="w-8 h-8 rounded-full object-cover flex-shrink-0 mt-1" alt="">
                             <div class="flex-1">
                                 <textarea name="body" rows="3" class="input resize-none" placeholder="Add a comment…" required></textarea>
                                 @error('body')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
@@ -218,7 +218,7 @@
             <div class="card p-5">
                 <h3 class="text-xs font-semibold uppercase tracking-wider text-ink-500 mb-4">Uploaded by</h3>
                 <div class="flex items-center gap-3">
-                    <img src="{{ $artifact->user->avatar_url }}" class="w-10 h-10 rounded-full border border-ink-200" alt="">
+                    <img src="{{ $artifact->user->avatar_url }}" class="w-10 h-10 rounded-full object-cover border border-ink-200" alt="">
                     <div>
                         <p class="text-sm font-medium text-ink-950">{{ $artifact->user->name }}</p>
                         @if($artifact->user->organization)
