@@ -8,7 +8,7 @@
             <h1 class="text-2xl font-bold text-ink-950 tracking-tight">Forum</h1>
             <p class="text-sm text-ink-500 mt-0.5">Community discussions and exchange</p>
         </div>
-        @if(auth()->user()->canPost())
+        @if(auth()->user()->isAdmin())
         <button @click="createForum = true" class="btn-primary flex-shrink-0">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
             New Forum
@@ -59,7 +59,7 @@
 
                 <!-- Actions -->
                 <div class="flex items-center gap-1 flex-shrink-0 self-center">
-                    @if(auth()->user()->canPost())
+                    @if(auth()->user()->isAdmin())
                     <button @click="editOpen = true"
                             class="p-2 rounded-lg hover:bg-ink-100 transition-colors text-ink-400 hover:text-ink-950"
                             title="Edit forum">
@@ -74,7 +74,7 @@
         </div>
 
         <!-- Edit modal for this category -->
-        @if(auth()->user()->canPost())
+        @if(auth()->user()->isAdmin())
         <div x-show="editOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" @keydown.escape.window="editOpen = false">
             <div class="absolute inset-0 bg-black/50" @click="editOpen = false"></div>
             <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md" @click.stop

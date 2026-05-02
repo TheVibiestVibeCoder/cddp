@@ -36,7 +36,7 @@ class ForumController extends Controller
 
     public function storeCategory(Request $request)
     {
-        abort_if(!auth()->user()->canPost(), 403);
+        abort_if(!auth()->user()->isAdmin(), 403);
 
         $validated = $request->validate([
             'name'        => 'required|string|max:100|unique:forum_categories,name',
@@ -59,7 +59,7 @@ class ForumController extends Controller
 
     public function updateCategory(Request $request, ForumCategory $category)
     {
-        abort_if(!auth()->user()->canPost(), 403);
+        abort_if(!auth()->user()->isAdmin(), 403);
 
         $validated = $request->validate([
             'name'        => 'required|string|max:100|unique:forum_categories,name,' . $category->id,
