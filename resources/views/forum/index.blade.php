@@ -22,11 +22,15 @@
         <div x-data="{ editOpen: false }">
         <div class="card hover:border-ink-300 transition-colors">
             <div class="p-5 flex items-start gap-4">
-                <!-- Icon -->
+                <!-- Icon / Image -->
+                @if($category->image_url)
+                <img src="{{ $category->image_url }}" class="w-11 h-11 rounded-xl object-cover flex-shrink-0 border border-ink-200" alt="">
+                @else
                 <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 text-white text-lg font-bold"
                      style="background-color: {{ $category->color }}">
                     {{ $category->icon ?: mb_substr($category->name, 0, 1) }}
                 </div>
+                @endif
 
                 <!-- Info -->
                 <div class="flex-1 min-w-0">
@@ -87,7 +91,7 @@
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
-                <form method="POST" action="{{ route('forum.category.update', $category) }}" class="p-6 space-y-4">
+                <form method="POST" action="{{ route('forum.category.update', $category) }}" enctype="multipart/form-data" class="p-6 space-y-4">
                     @csrf @method('PUT')
                     <div>
                         <label class="label">Name <span class="text-red-500">*</span></label>
@@ -123,6 +127,30 @@
                             @endforeach
                         </div>
                         <input type="hidden" name="color" x-ref="editColorInput{{ $category->id }}" :value="color">
+                    </div>
+                    <div x-data="{ imgMode: 'file' }">
+                        <label class="label">Forum Image <span class="text-ink-400 normal-case tracking-normal font-normal">(optional)</span></label>
+                        @if($category->image_url)
+                        <div class="mb-2 flex items-center gap-2">
+                            <img src="{{ $category->image_url }}" class="w-10 h-10 rounded-lg object-cover border border-ink-200" alt="">
+                            <span class="text-xs text-ink-400">Current image</span>
+                        </div>
+                        @endif
+                        <div class="flex gap-2 mb-2">
+                            <button type="button" @click="imgMode = 'file'"
+                                    :class="imgMode === 'file' ? 'bg-ink-950 text-white' : 'btn-secondary'"
+                                    class="px-2.5 py-1 text-xs rounded-md font-medium transition-colors">Upload</button>
+                            <button type="button" @click="imgMode = 'url'"
+                                    :class="imgMode === 'url' ? 'bg-ink-950 text-white' : 'btn-secondary'"
+                                    class="px-2.5 py-1 text-xs rounded-md font-medium transition-colors">URL</button>
+                        </div>
+                        <div x-show="imgMode === 'file'">
+                            <input type="file" name="image_file" accept="image/*"
+                                   class="block w-full text-sm text-ink-600 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-ink-100 file:text-ink-700 hover:file:bg-ink-200">
+                        </div>
+                        <div x-show="imgMode === 'url'" x-cloak>
+                            <input type="url" name="image_url" class="input" placeholder="https://…">
+                        </div>
                     </div>
                     <div class="flex items-center justify-end gap-3 pt-2">
                         <button type="button" @click="editOpen = false" class="btn-secondary">Cancel</button>
@@ -192,7 +220,7 @@
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
-            <form method="POST" action="{{ route('forum.category.store') }}" class="p-6 space-y-4">
+            <form method="POST" action="{{ route('forum.category.store') }}" enctype="multipart/form-data" class="p-6 space-y-4">
                 @csrf
                 <div>
                     <label class="label">Name <span class="text-red-500">*</span></label>
@@ -231,6 +259,24 @@
                         @endforeach
                     </div>
                     <input type="hidden" name="color" x-ref="colorInput" :value="color">
+                </div>
+                <div x-data="{ imgMode: 'file' }">
+                    <label class="label">Forum Image <span class="text-ink-400 normal-case tracking-normal font-normal">(optional)</span></label>
+                    <div class="flex gap-2 mb-2">
+                        <button type="button" @click="imgMode = 'file'"
+                                :class="imgMode === 'file' ? 'bg-ink-950 text-white' : 'btn-secondary'"
+                                class="px-2.5 py-1 text-xs rounded-md font-medium transition-colors">Upload</button>
+                        <button type="button" @click="imgMode = 'url'"
+                                :class="imgMode === 'url' ? 'bg-ink-950 text-white' : 'btn-secondary'"
+                                class="px-2.5 py-1 text-xs rounded-md font-medium transition-colors">URL</button>
+                    </div>
+                    <div x-show="imgMode === 'file'">
+                        <input type="file" name="image_file" accept="image/*"
+                               class="block w-full text-sm text-ink-600 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-ink-100 file:text-ink-700 hover:file:bg-ink-200">
+                    </div>
+                    <div x-show="imgMode === 'url'" x-cloak>
+                        <input type="url" name="image_url" class="input" placeholder="https://…">
+                    </div>
                 </div>
                 <div class="flex items-center justify-end gap-3 pt-2">
                     <button type="button" @click="createForum = false" class="btn-secondary">Cancel</button>

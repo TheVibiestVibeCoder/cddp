@@ -253,6 +253,16 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                 @foreach($artifacts as $artifact)
                 <a href="{{ route('data-room.show', $artifact) }}" class="card-hover group flex flex-col">
+                    @if($artifact->thumbnail_url)
+                    <div class="relative h-36 overflow-hidden rounded-t-xl">
+                        <img src="{{ $artifact->thumbnail_url }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="">
+                        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-ink-950/60"></div>
+                        <div class="absolute bottom-0 left-0 right-0 px-4 pb-3">
+                            <span class="badge bg-white/15 text-white/90 text-[10px]">{{ $artifact->type_label }}</span>
+                            <h3 class="text-sm font-semibold text-white mt-1.5 line-clamp-2 group-hover:underline underline-offset-2">{{ $artifact->title }}</h3>
+                        </div>
+                    </div>
+                    @else
                     <div class="bg-ink-950 px-5 pt-5 pb-4">
                         <div class="flex items-start justify-between gap-3">
                             <span class="text-3xl leading-none">{{ $artifact->type_icon }}</span>
@@ -260,6 +270,7 @@
                         </div>
                         <h3 class="text-sm font-semibold text-white mt-3 line-clamp-2 group-hover:underline underline-offset-2">{{ $artifact->title }}</h3>
                     </div>
+                    @endif
                     <div class="p-4 flex flex-col flex-1">
                         @if($artifact->summary)
                         <p class="text-xs text-ink-600 line-clamp-2 flex-1 mb-3">{{ $artifact->summary }}</p>

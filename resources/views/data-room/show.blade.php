@@ -18,9 +18,17 @@
 
             <!-- Artifact header -->
             <div class="card overflow-hidden">
+                @if($artifact->thumbnail_url)
+                <div class="relative h-56 overflow-hidden">
+                    <img src="{{ $artifact->thumbnail_url }}" class="w-full h-full object-cover" alt="">
+                    <div class="absolute inset-0 bg-gradient-to-b from-transparent to-ink-950/80"></div>
+                </div>
+                @endif
                 <div class="bg-ink-950 px-6 py-8">
                     <div class="flex items-start gap-4">
+                        @if(!$artifact->thumbnail_url)
                         <div class="text-5xl leading-none flex-shrink-0">{{ $artifact->type_icon }}</div>
+                        @endif
                         <div class="min-w-0 flex-1">
                             <div class="flex flex-wrap items-center gap-2 mb-3">
                                 <span class="badge bg-white/15 text-white text-xs">{{ $artifact->type_label }}</span>

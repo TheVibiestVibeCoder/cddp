@@ -18,6 +18,12 @@
 
             <!-- Thread header -->
             <div class="card overflow-hidden">
+                @if($thread->cover_image_url)
+                <div class="relative h-48 overflow-hidden">
+                    <img src="{{ $thread->cover_image_url }}" class="w-full h-full object-cover" alt="">
+                    <div class="absolute inset-0 bg-gradient-to-b from-transparent to-ink-950/80"></div>
+                </div>
+                @endif
                 <div class="bg-ink-950 px-6 py-6">
                     <div class="flex flex-wrap items-center gap-2 mb-3">
                         @if($thread->is_pinned)

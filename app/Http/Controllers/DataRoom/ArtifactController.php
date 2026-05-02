@@ -88,21 +88,31 @@ class ArtifactController extends Controller
         abort_if(!auth()->user()->canPost(), 403);
 
         $validated = $request->validate([
-            'title'         => 'required|string|max:255',
-            'summary'       => 'nullable|string|max:500',
-            'description'   => 'nullable|string',
-            'type'          => 'required|in:document,video,image,link,report,brief,dataset,other',
-            'category_id'   => 'nullable|exists:categories,id',
-            'file'          => 'nullable|file|max:102400',
-            'external_url'  => 'nullable|url',
-            'language'      => 'nullable|string|max:10',
-            'source'        => 'nullable|string|max:255',
-            'published_date'=> 'nullable|date',
-            'tags'          => 'nullable|array',
-            'tags.*'        => 'exists:tags,id',
-            'new_tags'      => 'nullable|string',
-            'is_featured'   => 'boolean',
+            'title'          => 'required|string|max:255',
+            'summary'        => 'nullable|string|max:500',
+            'description'    => 'nullable|string',
+            'type'           => 'required|in:document,video,image,link,report,brief,dataset,other',
+            'category_id'    => 'nullable|exists:categories,id',
+            'file'           => 'nullable|file|max:102400',
+            'external_url'   => 'nullable|url',
+            'thumbnail_file' => 'nullable|image|max:10240',
+            'thumbnail_url'  => 'nullable|url|max:2048',
+            'language'       => 'nullable|string|max:10',
+            'source'         => 'nullable|string|max:255',
+            'published_date' => 'nullable|date',
+            'tags'           => 'nullable|array',
+            'tags.*'         => 'exists:tags,id',
+            'new_tags'       => 'nullable|string',
+            'is_featured'    => 'boolean',
         ]);
+
+        $thumbnail = null;
+        if ($request->hasFile('thumbnail_file')) {
+            Storage::disk('public')->makeDirectory('thumbnails');
+            $thumbnail = $request->file('thumbnail_file')->store('thumbnails', 'public') ?: null;
+        } elseif ($request->filled('thumbnail_url')) {
+            $thumbnail = $request->input('thumbnail_url');
+        }
 
         $filePath = null;
         $fileName = null;
@@ -136,6 +146,7 @@ class ArtifactController extends Controller
             'file_size'      => $fileSize,
             'file_mime'      => $fileMime,
             'external_url'   => $validated['external_url'] ?? null,
+            'thumbnail'      => $thumbnail,
             'user_id'        => auth()->id(),
             'category_id'    => $validated['category_id'] ?? null,
             'language'       => $validated['language'] ?? 'en',
@@ -186,6 +197,8 @@ class ArtifactController extends Controller
             'category_id'    => 'nullable|exists:categories,id',
             'file'           => 'nullable|file|max:102400',
             'external_url'   => 'nullable|url',
+            'thumbnail_file' => 'nullable|image|max:10240',
+            'thumbnail_url'  => 'nullable|url|max:2048',
             'language'       => 'nullable|string|max:10',
             'source'         => 'nullable|string|max:255',
             'published_date' => 'nullable|date',
@@ -194,6 +207,17 @@ class ArtifactController extends Controller
             'new_tags'       => 'nullable|string',
             'is_featured'    => 'boolean',
         ]);
+
+        $thumbnail = $artifact->thumbnail;
+        if ($request->hasFile('thumbnail_file')) {
+            if ($artifact->thumbnail && !str_starts_with($artifact->thumbnail, 'http')) {
+                Storage::disk('public')->delete($artifact->thumbnail);
+            }
+            Storage::disk('public')->makeDirectory('thumbnails');
+            $thumbnail = $request->file('thumbnail_file')->store('thumbnails', 'public') ?: $artifact->thumbnail;
+        } elseif ($request->filled('thumbnail_url')) {
+            $thumbnail = $request->input('thumbnail_url');
+        }
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');
@@ -225,6 +249,7 @@ class ArtifactController extends Controller
             'file_size'      => $validated['file_size'] ?? $artifact->file_size,
             'file_mime'      => $validated['file_mime'] ?? $artifact->file_mime,
             'external_url'   => $validated['external_url'] ?? null,
+            'thumbnail'      => $thumbnail,
             'category_id'    => $validated['category_id'] ?? null,
             'language'       => $validated['language'] ?? 'en',
             'source'         => $validated['source'] ?? null,

@@ -11,10 +11,14 @@
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div class="flex items-center gap-4">
+            @if($category->image_url)
+            <img src="{{ $category->image_url }}" class="w-12 h-12 rounded-xl object-cover flex-shrink-0 border border-ink-200" alt="">
+            @else
             <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white text-xl font-bold flex-shrink-0"
                  style="background-color: {{ $category->color }}">
                 {{ $category->icon ?: mb_substr($category->name, 0, 1) }}
             </div>
+            @endif
             <div>
                 <h1 class="text-2xl font-bold text-ink-950 tracking-tight">{{ $category->name }}</h1>
                 @if($category->description)

@@ -103,6 +103,30 @@
                 </div>
             </div>
 
+            <!-- Thumbnail -->
+            <div class="card p-5 space-y-4" x-data="{ thumbMode: 'file' }">
+                <h2 class="text-sm font-semibold text-ink-950 pb-2 border-b border-ink-100">Preview Image <span class="text-ink-400 normal-case tracking-normal font-normal">(optional)</span></h2>
+                <div class="flex gap-2">
+                    <button type="button" @click="thumbMode = 'file'"
+                            :class="thumbMode === 'file' ? 'bg-ink-950 text-white' : 'btn-secondary'"
+                            class="px-3 py-1.5 text-xs rounded-lg font-medium transition-colors">Upload file</button>
+                    <button type="button" @click="thumbMode = 'url'"
+                            :class="thumbMode === 'url' ? 'bg-ink-950 text-white' : 'btn-secondary'"
+                            class="px-3 py-1.5 text-xs rounded-lg font-medium transition-colors">Paste URL</button>
+                </div>
+                <div x-show="thumbMode === 'file'">
+                    <input type="file" name="thumbnail_file" accept="image/*"
+                           class="block w-full text-sm text-ink-600 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-medium file:bg-ink-100 file:text-ink-700 hover:file:bg-ink-200">
+                    <p class="mt-1.5 text-xs text-ink-400">Max 10MB &middot; JPG, PNG, WebP, GIF</p>
+                </div>
+                <div x-show="thumbMode === 'url'" x-cloak>
+                    <input type="url" name="thumbnail_url" value="{{ old('thumbnail_url') }}"
+                           class="input @error('thumbnail_url') input-error @enderror" placeholder="https://…">
+                </div>
+                @error('thumbnail_file')<p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>@enderror
+                @error('thumbnail_url')<p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>@enderror
+            </div>
+
             <!-- Metadata -->
             <div class="card p-5 space-y-5">
                 <h2 class="text-sm font-semibold text-ink-950 pb-2 border-b border-ink-100">Metadata</h2>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ForumCategory;
 use App\Models\ForumThread;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ForumController extends Controller
@@ -43,7 +44,17 @@ class ForumController extends Controller
             'description' => 'nullable|string|max:500',
             'icon'        => 'nullable|string|max:10',
             'color'       => 'nullable|string|max:7',
+            'image_file'  => 'nullable|image|max:10240',
+            'image_url'   => 'nullable|url|max:2048',
         ]);
+
+        $image = null;
+        if ($request->hasFile('image_file')) {
+            Storage::disk('public')->makeDirectory('forum-images');
+            $image = $request->file('image_file')->store('forum-images', 'public') ?: null;
+        } elseif ($request->filled('image_url')) {
+            $image = $request->input('image_url');
+        }
 
         ForumCategory::create([
             'name'        => $validated['name'],
@@ -51,6 +62,7 @@ class ForumController extends Controller
             'description' => $validated['description'] ?? null,
             'icon'        => $validated['icon'] ?: '💬',
             'color'       => $validated['color'] ?: '#18181b',
+            'image'       => $image,
             'order'       => (ForumCategory::max('order') ?? 0) + 1,
         ]);
 
@@ -66,7 +78,20 @@ class ForumController extends Controller
             'description' => 'nullable|string|max:500',
             'icon'        => 'nullable|string|max:10',
             'color'       => 'nullable|string|max:7',
+            'image_file'  => 'nullable|image|max:10240',
+            'image_url'   => 'nullable|url|max:2048',
         ]);
+
+        $image = $category->image;
+        if ($request->hasFile('image_file')) {
+            if ($category->image && !str_starts_with($category->image, 'http')) {
+                Storage::disk('public')->delete($category->image);
+            }
+            Storage::disk('public')->makeDirectory('forum-images');
+            $image = $request->file('image_file')->store('forum-images', 'public') ?: $category->image;
+        } elseif ($request->filled('image_url')) {
+            $image = $request->input('image_url');
+        }
 
         $category->update([
             'name'        => $validated['name'],
@@ -74,6 +99,7 @@ class ForumController extends Controller
             'description' => $validated['description'] ?? null,
             'icon'        => $validated['icon'] ?: $category->icon,
             'color'       => $validated['color'] ?: $category->color,
+            'image'       => $image,
         ]);
 
         return redirect()->route('forum.index')->with('success', 'Forum updated.');
