@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Category;
 use App\Models\Tag;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Password;
 
 class AdminController extends Controller
 {
@@ -64,7 +65,16 @@ class AdminController extends Controller
             'role' => 'required|in:admin,user,readonly',
         ]);
 
-        $user->update(['role' => $validated['role']]);
+        // Prevent removing the last admin
+        if ($user->role === 'admin' && $validated['role'] !== 'admin') {
+            $adminCount = User::where('role', 'admin')->count();
+            abort_if($adminCount <= 1, 422, 'Cannot remove the last admin account.');
+        }
+
+        // Prevent changing your own role (avoid accidental self-lockout)
+        abort_if($user->id === auth()->id() && $validated['role'] !== 'admin', 422, 'You cannot change your own role.');
+
+        $user->forceFill(['role' => $validated['role']])->save();
         return back()->with('success', "User role updated to {$validated['role']}.");
     }
 
@@ -74,6 +84,16 @@ class AdminController extends Controller
         abort_if($user->id === auth()->id(), 403, 'You cannot delete yourself.');
         $user->delete();
         return back()->with('success', 'User deleted.');
+    }
+
+    public function forcePasswordReset(User $user)
+    {
+        $this->requireAdmin();
+        abort_if($user->id === auth()->id(), 403, 'Use the normal password change for your own account.');
+
+        Password::sendResetLink(['email' => $user->email]);
+
+        return back()->with('success', "Password reset email sent to {$user->email}. Their current sessions will expire on next request.");
     }
 
     public function categories()

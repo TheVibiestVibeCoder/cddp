@@ -43,9 +43,9 @@ class ForumController extends Controller
             'name'        => 'required|string|max:100|unique:forum_categories,name',
             'description' => 'nullable|string|max:500',
             'icon'        => 'nullable|string|max:10',
-            'color'       => 'nullable|string|max:7',
+            'color'       => 'nullable|string|max:7|regex:/^#[0-9a-fA-F]{3,6}$/',
             'image_file'  => 'nullable|image|max:10240',
-            'image_url'   => 'nullable|url|max:2048',
+            'image_url'   => 'nullable|url|max:2048|regex:/^https?:\/\//i',
         ]);
 
         $image = null;
@@ -77,9 +77,9 @@ class ForumController extends Controller
             'name'        => 'required|string|max:100|unique:forum_categories,name,' . $category->id,
             'description' => 'nullable|string|max:500',
             'icon'        => 'nullable|string|max:10',
-            'color'       => 'nullable|string|max:7',
+            'color'       => 'nullable|string|max:7|regex:/^#[0-9a-fA-F]{3,6}$/',
             'image_file'  => 'nullable|image|max:10240',
-            'image_url'   => 'nullable|url|max:2048',
+            'image_url'   => 'nullable|url|max:2048|regex:/^https?:\/\//i',
         ]);
 
         $image = $category->image;

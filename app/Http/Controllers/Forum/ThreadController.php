@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Forum;
 use App\Http\Controllers\Controller;
 use App\Models\ForumCategory;
 use App\Models\ForumThread;
-use App\Models\ForumPost;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -41,12 +40,12 @@ class ThreadController extends Controller
 
         $validated = $request->validate([
             'title'            => 'required|string|max:255',
-            'body'             => 'required|string|min:10',
-            'tags'             => 'nullable|array',
+            'body'             => 'required|string|min:10|max:50000',
+            'tags'             => 'nullable|array|max:20',
             'tags.*'           => 'exists:tags,id',
-            'new_tags'         => 'nullable|string',
+            'new_tags'         => 'nullable|string|max:200',
             'cover_image_file' => 'nullable|image|max:10240',
-            'cover_image_url'  => 'nullable|url|max:2048',
+            'cover_image_url'  => 'nullable|url|max:2048|regex:/^https?:\/\//i',
         ]);
 
         $coverImage = null;
@@ -102,14 +101,14 @@ class ThreadController extends Controller
 
         $validated = $request->validate([
             'title'            => 'required|string|max:255',
-            'body'             => 'required|string|min:10',
-            'tags'             => 'nullable|array',
+            'body'             => 'required|string|min:10|max:50000',
+            'tags'             => 'nullable|array|max:20',
             'tags.*'           => 'exists:tags,id',
-            'new_tags'         => 'nullable|string',
+            'new_tags'         => 'nullable|string|max:200',
             'is_pinned'        => 'boolean',
             'is_locked'        => 'boolean',
             'cover_image_file' => 'nullable|image|max:10240',
-            'cover_image_url'  => 'nullable|url|max:2048',
+            'cover_image_url'  => 'nullable|url|max:2048|regex:/^https?:\/\//i',
         ]);
 
         $coverImage = $thread->cover_image;

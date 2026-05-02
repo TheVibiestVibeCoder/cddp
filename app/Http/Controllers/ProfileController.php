@@ -37,7 +37,7 @@ class ProfileController extends Controller
             Storage::disk('public')->makeDirectory('avatars');
             $user->avatar = $request->file('avatar_file')->store('avatars', 'public') ?: $user->avatar;
         } elseif ($request->filled('avatar_url')) {
-            $request->validate(['avatar_url' => 'url|max:2048']);
+            $request->validate(['avatar_url' => ['url', 'max:2048', 'regex:/^https?:\/\//i']]);
             $user->avatar = $request->input('avatar_url');
         }
 
