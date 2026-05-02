@@ -56,4 +56,26 @@ class ForumController extends Controller
 
         return redirect()->route('forum.index')->with('success', 'Forum created.');
     }
+
+    public function updateCategory(Request $request, ForumCategory $category)
+    {
+        abort_if(!auth()->user()->canPost(), 403);
+
+        $validated = $request->validate([
+            'name'        => 'required|string|max:100|unique:forum_categories,name,' . $category->id,
+            'description' => 'nullable|string|max:500',
+            'icon'        => 'nullable|string|max:10',
+            'color'       => 'nullable|string|max:7',
+        ]);
+
+        $category->update([
+            'name'        => $validated['name'],
+            'slug'        => Str::slug($validated['name']),
+            'description' => $validated['description'] ?? null,
+            'icon'        => $validated['icon'] ?: $category->icon,
+            'color'       => $validated['color'] ?: $category->color,
+        ]);
+
+        return redirect()->route('forum.index')->with('success', 'Forum updated.');
+    }
 }

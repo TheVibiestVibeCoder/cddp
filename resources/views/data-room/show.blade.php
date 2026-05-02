@@ -115,7 +115,9 @@
             </div>
 
             <!-- Comments -->
-            <div id="comments" class="card">
+            <div id="comments" class="card"
+                 x-data="{ replyTo: null, replyName: '' }"
+                 @reply-to.window="replyTo = $event.detail.parentId; replyName = $event.detail.name; $nextTick(() => $refs.commentBox.scrollIntoView({ behavior: 'smooth' }))">
                 <div class="px-5 py-4 border-b border-ink-100">
                     <h2 class="text-sm font-semibold text-ink-950">Comments <span class="text-ink-400 font-normal">({{ $artifact->comments->count() }})</span></h2>
                 </div>
@@ -131,9 +133,20 @@
                 @endif
 
                 @if(auth()->user()->canPost())
-                <div class="px-5 py-4 border-t border-ink-100 bg-ink-50">
+                <div class="px-5 py-4 border-t border-ink-100 bg-ink-50" x-ref="commentBox">
                     <form method="POST" action="{{ route('data-room.comments.store', $artifact) }}">
                         @csrf
+                        <input type="hidden" name="parent_id" :value="replyTo">
+
+                        <div x-show="replyTo" x-cloak
+                             class="flex items-center gap-2 mb-3 p-2.5 bg-white rounded-lg text-sm text-ink-600 border border-ink-200">
+                            <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
+                            Replying to <strong class="ml-1" x-text="replyName"></strong>
+                            <button type="button" class="ml-auto" @click="replyTo = null; replyName = ''">
+                                <svg class="w-3.5 h-3.5 text-ink-400 hover:text-ink-950" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        </div>
+
                         <div class="flex items-start gap-3">
                             <img src="{{ auth()->user()->avatar_url }}" class="w-8 h-8 rounded-full flex-shrink-0 mt-1" alt="">
                             <div class="flex-1">

@@ -51,6 +51,7 @@ Route::prefix('data-room')->name('data-room.')->group(function () {
 Route::prefix('forum')->name('forum.')->middleware('auth')->group(function () {
     Route::get('/', [ForumController::class, 'index'])->name('index');
     Route::post('/', [ForumController::class, 'storeCategory'])->name('category.store');
+    Route::put('/category/{category}', [ForumController::class, 'updateCategory'])->name('category.update');
     Route::get('/threads/{thread}/edit', [ThreadController::class, 'edit'])->name('thread.edit');
     Route::put('/threads/{thread}', [ThreadController::class, 'update'])->name('thread.update');
     Route::delete('/threads/{thread}', [ThreadController::class, 'destroy'])->name('thread.destroy');

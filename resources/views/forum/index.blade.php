@@ -19,6 +19,7 @@
     <!-- Categories -->
     <div class="space-y-3 mb-8">
         @forelse($categories as $category)
+        <div x-data="{ editOpen: false }">
         <div class="card hover:border-ink-300 transition-colors">
             <div class="p-5 flex items-start gap-4">
                 <!-- Icon -->
@@ -56,12 +57,82 @@
                     @endif
                 </div>
 
-                <!-- Arrow -->
-                <a href="{{ route('forum.category', $category) }}" class="flex-shrink-0 self-center p-2 rounded-lg hover:bg-ink-100 transition-colors text-ink-400 hover:text-ink-950">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
-                </a>
+                <!-- Actions -->
+                <div class="flex items-center gap-1 flex-shrink-0 self-center">
+                    @if(auth()->user()->canPost())
+                    <button @click="editOpen = true"
+                            class="p-2 rounded-lg hover:bg-ink-100 transition-colors text-ink-400 hover:text-ink-950"
+                            title="Edit forum">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                    </button>
+                    @endif
+                    <a href="{{ route('forum.category', $category) }}" class="p-2 rounded-lg hover:bg-ink-100 transition-colors text-ink-400 hover:text-ink-950">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+                    </a>
+                </div>
             </div>
         </div>
+
+        <!-- Edit modal for this category -->
+        @if(auth()->user()->canPost())
+        <div x-show="editOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" @keydown.escape.window="editOpen = false">
+            <div class="absolute inset-0 bg-black/50" @click="editOpen = false"></div>
+            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md" @click.stop
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 scale-95"
+                 x-transition:enter-end="opacity-100 scale-100">
+                <div class="px-6 py-5 border-b border-ink-100 flex items-center justify-between">
+                    <h2 class="text-base font-semibold text-ink-950">Edit Forum</h2>
+                    <button @click="editOpen = false" class="p-1 rounded-lg hover:bg-ink-100 text-ink-400 hover:text-ink-950 transition-colors">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+                <form method="POST" action="{{ route('forum.category.update', $category) }}" class="p-6 space-y-4">
+                    @csrf @method('PUT')
+                    <div>
+                        <label class="label">Name <span class="text-red-500">*</span></label>
+                        <input type="text" name="name" class="input" required maxlength="100"
+                               value="{{ $category->name }}">
+                    </div>
+                    <div>
+                        <label class="label">Description</label>
+                        <input type="text" name="description" class="input" maxlength="500"
+                               value="{{ $category->description }}">
+                    </div>
+                    <div x-data="{ icon: '{{ addslashes($category->icon ?? '💬') }}' }">
+                        <label class="label">Icon</label>
+                        <div class="flex flex-wrap gap-2 mb-2">
+                            @foreach(['💬','📢','🔬','📰','🌐','🗂️','📊','🤝','⚠️','🔍','📝','💡'] as $emoji)
+                            <button type="button"
+                                    @click="icon = '{{ $emoji }}'; $refs.editIconInput{{ $category->id }}.value = '{{ $emoji }}'"
+                                    class="w-9 h-9 rounded-lg border border-ink-200 hover:border-ink-950 text-lg transition-colors"
+                                    :class="icon === '{{ $emoji }}' ? 'border-ink-950 bg-ink-50' : ''">{{ $emoji }}</button>
+                            @endforeach
+                        </div>
+                        <input type="hidden" name="icon" x-ref="editIconInput{{ $category->id }}" :value="icon">
+                    </div>
+                    <div x-data="{ color: '{{ $category->color ?? '#18181b' }}' }">
+                        <label class="label">Color</label>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach(['#18181b','#1d4ed8','#15803d','#b91c1c','#7c3aed','#0891b2','#c2410c','#be185d'] as $c)
+                            <button type="button"
+                                    @click="color = '{{ $c }}'; $refs.editColorInput{{ $category->id }}.value = '{{ $c }}'"
+                                    class="w-8 h-8 rounded-lg border-2 transition-all"
+                                    :class="color === '{{ $c }}' ? 'border-ink-950 scale-110' : 'border-transparent'"
+                                    style="background-color: {{ $c }}"></button>
+                            @endforeach
+                        </div>
+                        <input type="hidden" name="color" x-ref="editColorInput{{ $category->id }}" :value="color">
+                    </div>
+                    <div class="flex items-center justify-end gap-3 pt-2">
+                        <button type="button" @click="editOpen = false" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-primary">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        @endif
+        </div>{{-- close x-data per category --}}
         @empty
         <div class="card p-12 text-center">
             <svg class="w-12 h-12 text-ink-200 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
