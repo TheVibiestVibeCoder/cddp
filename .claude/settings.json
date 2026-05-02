@@ -8,7 +8,11 @@
       "Bash(php artisan *)",
       "Bash(npm run *)",
       "Bash(npm install *)",
-      "Bash(php -r ' *)"
+      "Bash(php -r ' *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(composer install *)"
     ]
   }
 }
