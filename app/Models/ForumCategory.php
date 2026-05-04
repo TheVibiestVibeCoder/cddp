@@ -9,7 +9,15 @@ class ForumCategory extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'slug', 'description', 'icon', 'color', 'order'];
+    protected $fillable = ['name', 'slug', 'description', 'icon', 'color', 'image', 'order'];
+
+    public function getImageUrlAttribute(): ?string
+    {
+        if (!$this->image) return null;
+        return str_starts_with($this->image, 'http')
+            ? $this->image
+            : asset('storage/' . $this->image);
+    }
 
     public function threads()
     {

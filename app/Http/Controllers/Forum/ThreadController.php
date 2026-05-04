@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Forum;
 use App\Http\Controllers\Controller;
 use App\Models\ForumCategory;
 use App\Models\ForumThread;
-use App\Models\ForumPost;
 use App\Models\Tag;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ThreadController extends Controller
@@ -39,17 +39,28 @@ class ThreadController extends Controller
         abort_if(!auth()->user()->canPost(), 403);
 
         $validated = $request->validate([
-            'title'    => 'required|string|max:255',
-            'body'     => 'required|string|min:10',
-            'tags'     => 'nullable|array',
-            'tags.*'   => 'exists:tags,id',
-            'new_tags' => 'nullable|string',
+            'title'            => 'required|string|max:255',
+            'body'             => 'required|string|min:10|max:50000',
+            'tags'             => 'nullable|array|max:20',
+            'tags.*'           => 'exists:tags,id',
+            'new_tags'         => 'nullable|string|max:200',
+            'cover_image_file' => 'nullable|image|max:10240',
+            'cover_image_url'  => 'nullable|url|max:2048|regex:/^https?:\/\//i',
         ]);
+
+        $coverImage = null;
+        if ($request->hasFile('cover_image_file')) {
+            Storage::disk('public')->makeDirectory('thread-covers');
+            $coverImage = $request->file('cover_image_file')->store('thread-covers', 'public') ?: null;
+        } elseif ($request->filled('cover_image_url')) {
+            $coverImage = $request->input('cover_image_url');
+        }
 
         $thread = ForumThread::create([
             'title'             => $validated['title'],
             'slug'              => Str::slug($validated['title']) . '-' . Str::random(6),
             'body'              => $validated['body'],
+            'cover_image'       => $coverImage,
             'user_id'           => auth()->id(),
             'forum_category_id' => $category->id,
             'last_reply_at'     => now(),
@@ -89,20 +100,34 @@ class ThreadController extends Controller
         abort_if(!auth()->user()->isAdmin() && $thread->user_id !== auth()->id(), 403);
 
         $validated = $request->validate([
-            'title'     => 'required|string|max:255',
-            'body'      => 'required|string|min:10',
-            'tags'      => 'nullable|array',
-            'tags.*'    => 'exists:tags,id',
-            'new_tags'  => 'nullable|string',
-            'is_pinned' => 'boolean',
-            'is_locked' => 'boolean',
+            'title'            => 'required|string|max:255',
+            'body'             => 'required|string|min:10|max:50000',
+            'tags'             => 'nullable|array|max:20',
+            'tags.*'           => 'exists:tags,id',
+            'new_tags'         => 'nullable|string|max:200',
+            'is_pinned'        => 'boolean',
+            'is_locked'        => 'boolean',
+            'cover_image_file' => 'nullable|image|max:10240',
+            'cover_image_url'  => 'nullable|url|max:2048|regex:/^https?:\/\//i',
         ]);
 
+        $coverImage = $thread->cover_image;
+        if ($request->hasFile('cover_image_file')) {
+            if ($thread->cover_image && !str_starts_with($thread->cover_image, 'http')) {
+                Storage::disk('public')->delete($thread->cover_image);
+            }
+            Storage::disk('public')->makeDirectory('thread-covers');
+            $coverImage = $request->file('cover_image_file')->store('thread-covers', 'public') ?: $thread->cover_image;
+        } elseif ($request->filled('cover_image_url')) {
+            $coverImage = $request->input('cover_image_url');
+        }
+
         $thread->update([
-            'title'     => $validated['title'],
-            'body'      => $validated['body'],
-            'is_pinned' => auth()->user()->isAdmin() ? $request->boolean('is_pinned') : $thread->is_pinned,
-            'is_locked' => auth()->user()->isAdmin() ? $request->boolean('is_locked') : $thread->is_locked,
+            'title'       => $validated['title'],
+            'body'        => $validated['body'],
+            'cover_image' => $coverImage,
+            'is_pinned'   => auth()->user()->isAdmin() ? $request->boolean('is_pinned') : $thread->is_pinned,
+            'is_locked'   => auth()->user()->isAdmin() ? $request->boolean('is_locked') : $thread->is_locked,
         ]);
 
         $tagIds = $validated['tags'] ?? [];

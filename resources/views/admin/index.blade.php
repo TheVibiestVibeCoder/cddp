@@ -57,7 +57,7 @@
                         <tr>
                             <td>
                                 <div class="flex items-center gap-2.5">
-                                    <img src="{{ $user->avatar_url }}" class="w-7 h-7 rounded-full" alt="">
+                                    <img src="{{ $user->avatar_url }}" class="w-7 h-7 rounded-full object-cover" alt="">
                                     <div>
                                         <p class="font-medium text-ink-950 text-sm">{{ $user->name }}</p>
                                         <p class="text-xs text-ink-400">{{ $user->email }}</p>

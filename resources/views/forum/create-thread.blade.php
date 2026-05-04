@@ -16,7 +16,7 @@
             <p class="text-sm text-ink-500 mt-0.5">Posting in <span class="font-medium text-ink-700">{{ $category->name }}</span></p>
         </div>
 
-        <form method="POST" action="{{ route('forum.thread.store', $category) }}" class="space-y-6">
+        <form method="POST" action="{{ route('forum.thread.store', $category) }}" enctype="multipart/form-data" class="space-y-6">
             @csrf
 
             <div class="card p-5 space-y-5">
@@ -36,6 +36,30 @@
                     <p class="text-xs text-ink-400 mt-1.5">You can use @username to mention users and reference artifacts</p>
                     @error('body')<p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>@enderror
                 </div>
+            </div>
+
+            <!-- Cover image -->
+            <div class="card p-5 space-y-4" x-data="{ coverMode: 'file' }">
+                <h2 class="text-sm font-semibold text-ink-950 pb-2 border-b border-ink-100">Cover Image <span class="text-ink-400 normal-case tracking-normal font-normal">(optional)</span></h2>
+                <div class="flex gap-2">
+                    <button type="button" @click="coverMode = 'file'"
+                            :class="coverMode === 'file' ? 'bg-ink-950 text-white' : 'btn-secondary'"
+                            class="px-3 py-1.5 text-xs rounded-lg font-medium transition-colors">Upload file</button>
+                    <button type="button" @click="coverMode = 'url'"
+                            :class="coverMode === 'url' ? 'bg-ink-950 text-white' : 'btn-secondary'"
+                            class="px-3 py-1.5 text-xs rounded-lg font-medium transition-colors">Paste URL</button>
+                </div>
+                <div x-show="coverMode === 'file'">
+                    <input type="file" name="cover_image_file" accept="image/*"
+                           class="block w-full text-sm text-ink-600 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-medium file:bg-ink-100 file:text-ink-700 hover:file:bg-ink-200">
+                    <p class="mt-1.5 text-xs text-ink-400">Max 10MB &middot; JPG, PNG, WebP, GIF</p>
+                </div>
+                <div x-show="coverMode === 'url'" x-cloak>
+                    <input type="url" name="cover_image_url" value="{{ old('cover_image_url') }}"
+                           class="input @error('cover_image_url') input-error @enderror" placeholder="https://…">
+                </div>
+                @error('cover_image_file')<p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>@enderror
+                @error('cover_image_url')<p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>@enderror
             </div>
 
             <!-- Tags -->

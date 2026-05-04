@@ -1,6 +1,6 @@
 <div class="px-5 py-4" id="comment-{{ $comment->id }}" x-data="{ editing: false }">
     <div class="flex items-start gap-3">
-        <img src="{{ $comment->user->avatar_url }}" class="w-8 h-8 rounded-full flex-shrink-0 border border-ink-200" alt="">
+        <img src="{{ $comment->user->avatar_url }}" class="w-8 h-8 rounded-full object-cover flex-shrink-0 border border-ink-200" alt="">
         <div class="flex-1 min-w-0">
             <div class="flex items-baseline gap-2 flex-wrap">
                 <span class="text-sm font-semibold text-ink-950">{{ $comment->user->name }}</span>
@@ -45,7 +45,7 @@
             <div class="mt-3 space-y-3 pl-4 border-l-2 border-ink-100" x-show="!editing">
                 @foreach($comment->replies as $reply)
                 <div class="flex items-start gap-3" x-data="{ editing: false }">
-                    <img src="{{ $reply->user->avatar_url }}" class="w-6 h-6 rounded-full flex-shrink-0" alt="">
+                    <img src="{{ $reply->user->avatar_url }}" class="w-6 h-6 rounded-full object-cover flex-shrink-0" alt="">
                     <div class="flex-1 min-w-0">
                         <div class="flex items-baseline gap-2">
                             <span class="text-xs font-semibold text-ink-950">{{ $reply->user->name }}</span>

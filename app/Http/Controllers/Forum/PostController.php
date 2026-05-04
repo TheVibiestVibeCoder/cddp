@@ -12,6 +12,7 @@ class PostController extends Controller
 {
     public function store(Request $request, ForumCategory $category, ForumThread $thread)
     {
+        abort_if($thread->forum_category_id !== $category->id, 404);
         abort_if(!auth()->user()->canPost(), 403);
         abort_if($thread->is_locked && !auth()->user()->isAdmin(), 403);
 

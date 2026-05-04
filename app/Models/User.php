@@ -13,7 +13,7 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     protected $fillable = [
-        'name', 'email', 'password', 'role', 'avatar', 'bio', 'organization',
+        'name', 'email', 'password', 'avatar', 'bio', 'organization',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -64,7 +64,9 @@ class User extends Authenticatable
     public function getAvatarUrlAttribute(): string
     {
         if ($this->avatar) {
-            return asset('storage/' . $this->avatar);
+            return str_starts_with($this->avatar, 'http')
+                ? $this->avatar
+                : asset('storage/' . $this->avatar);
         }
         return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&background=111827&color=fff&size=128';
     }

@@ -10,9 +10,17 @@ class ForumThread extends Model
     use HasFactory;
 
     protected $fillable = [
-        'title', 'slug', 'body', 'user_id', 'forum_category_id',
+        'title', 'slug', 'body', 'cover_image', 'user_id', 'forum_category_id',
         'is_pinned', 'is_locked', 'last_reply_at', 'last_reply_user_id',
     ];
+
+    public function getCoverImageUrlAttribute(): ?string
+    {
+        if (!$this->cover_image) return null;
+        return str_starts_with($this->cover_image, 'http')
+            ? $this->cover_image
+            : asset('storage/' . $this->cover_image);
+    }
 
     protected function casts(): array
     {

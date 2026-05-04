@@ -18,6 +18,12 @@
 
             <!-- Thread header -->
             <div class="card overflow-hidden">
+                @if($thread->cover_image_url)
+                <div class="relative h-48 overflow-hidden">
+                    <img src="{{ $thread->cover_image_url }}" class="w-full h-full object-cover" alt="">
+                    <div class="absolute inset-0 bg-gradient-to-b from-transparent to-ink-950/80"></div>
+                </div>
+                @endif
                 <div class="bg-ink-950 px-6 py-6">
                     <div class="flex flex-wrap items-center gap-2 mb-3">
                         @if($thread->is_pinned)
@@ -36,7 +42,7 @@
                 <!-- OP post -->
                 <div class="p-6">
                     <div class="flex items-start gap-4">
-                        <img src="{{ $thread->user->avatar_url }}" class="w-10 h-10 rounded-full border border-ink-200 flex-shrink-0" alt="">
+                        <img src="{{ $thread->user->avatar_url }}" class="w-10 h-10 rounded-full object-cover border border-ink-200 flex-shrink-0" alt="">
                         <div class="flex-1 min-w-0">
                             <div class="flex items-baseline gap-2 flex-wrap mb-3">
                                 <span class="text-sm font-semibold text-ink-950">{{ $thread->user->name }}</span>
@@ -83,7 +89,7 @@
                 @foreach($posts as $post)
                 <div class="card overflow-hidden" id="post-{{ $post->id }}">
                     <div class="p-5 flex items-start gap-4">
-                        <img src="{{ $post->user->avatar_url }}" class="w-9 h-9 rounded-full border border-ink-200 flex-shrink-0" alt="">
+                        <img src="{{ $post->user->avatar_url }}" class="w-9 h-9 rounded-full object-cover border border-ink-200 flex-shrink-0" alt="">
                         <div class="flex-1 min-w-0">
                             <div class="flex items-baseline gap-2 flex-wrap mb-3">
                                 <span class="text-sm font-semibold text-ink-950">{{ $post->user->name }}</span>
@@ -116,7 +122,7 @@
                                  x-show="editingPost !== {{ $post->id }}">
                                 @foreach($post->replies as $reply)
                                 <div class="flex items-start gap-3" id="post-{{ $reply->id }}">
-                                    <img src="{{ $reply->user->avatar_url }}" class="w-7 h-7 rounded-full flex-shrink-0" alt="">
+                                    <img src="{{ $reply->user->avatar_url }}" class="w-7 h-7 rounded-full object-cover flex-shrink-0" alt="">
                                     <div class="flex-1 min-w-0">
                                         <div class="flex items-baseline gap-2 mb-1 flex-wrap">
                                             <span class="text-xs font-semibold text-ink-950">{{ $reply->user->name }}</span>
@@ -215,7 +221,7 @@
                         </div>
 
                         <div class="flex items-start gap-3">
-                            <img src="{{ auth()->user()->avatar_url }}" class="w-9 h-9 rounded-full flex-shrink-0 mt-0.5" alt="">
+                            <img src="{{ auth()->user()->avatar_url }}" class="w-9 h-9 rounded-full object-cover flex-shrink-0 mt-0.5" alt="">
                             <div class="flex-1">
                                 <textarea name="body" rows="5" class="input resize-y" placeholder="Write your reply…" required></textarea>
                                 @error('body')<p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>@enderror

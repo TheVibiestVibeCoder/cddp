@@ -56,7 +56,13 @@ class ArtifactController extends Controller
 
     public function show(Artifact $artifact)
     {
-        abort_if(!$artifact->is_published && !auth()->user()?->isAdmin(), 404);
+        $user = auth()->user();
+        abort_if(
+            !$artifact->is_published
+            && !$user?->isAdmin()
+            && $artifact->user_id !== $user?->id,
+            404
+        );
 
         $artifact->incrementViews();
         $artifact->load(['user', 'category', 'tags', 'comments.user', 'comments.replies.user']);
@@ -88,21 +94,31 @@ class ArtifactController extends Controller
         abort_if(!auth()->user()->canPost(), 403);
 
         $validated = $request->validate([
-            'title'         => 'required|string|max:255',
-            'summary'       => 'nullable|string|max:500',
-            'description'   => 'nullable|string',
-            'type'          => 'required|in:document,video,image,link,report,brief,dataset,other',
-            'category_id'   => 'nullable|exists:categories,id',
-            'file'          => 'nullable|file|max:102400',
-            'external_url'  => 'nullable|url',
-            'language'      => 'nullable|string|max:10',
-            'source'        => 'nullable|string|max:255',
-            'published_date'=> 'nullable|date',
-            'tags'          => 'nullable|array',
-            'tags.*'        => 'exists:tags,id',
-            'new_tags'      => 'nullable|string',
-            'is_featured'   => 'boolean',
+            'title'          => 'required|string|max:255',
+            'summary'        => 'nullable|string|max:500',
+            'description'    => 'nullable|string|max:50000',
+            'type'           => 'required|in:document,video,image,link,report,brief,dataset,other',
+            'category_id'    => 'nullable|exists:categories,id',
+            'file'           => 'nullable|file|max:102400|mimes:pdf,doc,docx,odt,rtf,txt,xls,xlsx,ods,csv,ppt,pptx,odp,zip,rar,gz,tar,7z,jpg,jpeg,png,gif,webp,svg,bmp,tiff,tif,mp4,mov,avi,webm,mkv,ogv,mp3,wav,ogg,m4a,aac,json,xml',
+            'external_url'   => 'nullable|url|max:2048',
+            'thumbnail_file' => 'nullable|image|max:10240',
+            'thumbnail_url'  => 'nullable|url|max:2048|regex:/^https?:\/\//i',
+            'language'       => 'nullable|string|max:10',
+            'source'         => 'nullable|string|max:255',
+            'published_date' => 'nullable|date',
+            'tags'           => 'nullable|array|max:20',
+            'tags.*'         => 'exists:tags,id',
+            'new_tags'       => 'nullable|string|max:200',
+            'is_featured'    => 'boolean',
         ]);
+
+        $thumbnail = null;
+        if ($request->hasFile('thumbnail_file')) {
+            Storage::disk('public')->makeDirectory('thumbnails');
+            $thumbnail = $request->file('thumbnail_file')->store('thumbnails', 'public') ?: null;
+        } elseif ($request->filled('thumbnail_url')) {
+            $thumbnail = $request->input('thumbnail_url');
+        }
 
         $filePath = null;
         $fileName = null;
@@ -136,12 +152,13 @@ class ArtifactController extends Controller
             'file_size'      => $fileSize,
             'file_mime'      => $fileMime,
             'external_url'   => $validated['external_url'] ?? null,
+            'thumbnail'      => $thumbnail,
             'user_id'        => auth()->id(),
             'category_id'    => $validated['category_id'] ?? null,
             'language'       => $validated['language'] ?? 'en',
             'source'         => $validated['source'] ?? null,
             'published_date' => $validated['published_date'] ?? null,
-            'is_featured'    => $request->boolean('is_featured'),
+            'is_featured'    => auth()->user()->isAdmin() ? $request->boolean('is_featured') : false,
             'is_published'   => true,
         ]);
 
@@ -181,19 +198,32 @@ class ArtifactController extends Controller
         $validated = $request->validate([
             'title'          => 'required|string|max:255',
             'summary'        => 'nullable|string|max:500',
-            'description'    => 'nullable|string',
+            'description'    => 'nullable|string|max:50000',
             'type'           => 'required|in:document,video,image,link,report,brief,dataset,other',
             'category_id'    => 'nullable|exists:categories,id',
-            'file'           => 'nullable|file|max:102400',
-            'external_url'   => 'nullable|url',
+            'file'           => 'nullable|file|max:102400|mimes:pdf,doc,docx,odt,rtf,txt,xls,xlsx,ods,csv,ppt,pptx,odp,zip,rar,gz,tar,7z,jpg,jpeg,png,gif,webp,svg,bmp,tiff,tif,mp4,mov,avi,webm,mkv,ogv,mp3,wav,ogg,m4a,aac,json,xml',
+            'external_url'   => 'nullable|url|max:2048',
+            'thumbnail_file' => 'nullable|image|max:10240',
+            'thumbnail_url'  => 'nullable|url|max:2048|regex:/^https?:\/\//i',
             'language'       => 'nullable|string|max:10',
             'source'         => 'nullable|string|max:255',
             'published_date' => 'nullable|date',
-            'tags'           => 'nullable|array',
+            'tags'           => 'nullable|array|max:20',
             'tags.*'         => 'exists:tags,id',
-            'new_tags'       => 'nullable|string',
+            'new_tags'       => 'nullable|string|max:200',
             'is_featured'    => 'boolean',
         ]);
+
+        $thumbnail = $artifact->thumbnail;
+        if ($request->hasFile('thumbnail_file')) {
+            if ($artifact->thumbnail && !str_starts_with($artifact->thumbnail, 'http')) {
+                Storage::disk('public')->delete($artifact->thumbnail);
+            }
+            Storage::disk('public')->makeDirectory('thumbnails');
+            $thumbnail = $request->file('thumbnail_file')->store('thumbnails', 'public') ?: $artifact->thumbnail;
+        } elseif ($request->filled('thumbnail_url')) {
+            $thumbnail = $request->input('thumbnail_url');
+        }
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');
@@ -225,6 +255,7 @@ class ArtifactController extends Controller
             'file_size'      => $validated['file_size'] ?? $artifact->file_size,
             'file_mime'      => $validated['file_mime'] ?? $artifact->file_mime,
             'external_url'   => $validated['external_url'] ?? null,
+            'thumbnail'      => $thumbnail,
             'category_id'    => $validated['category_id'] ?? null,
             'language'       => $validated['language'] ?? 'en',
             'source'         => $validated['source'] ?? null,

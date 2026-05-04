@@ -45,6 +45,14 @@ class Artifact extends Model
         return $this->morphToMany(Tag::class, 'taggable');
     }
 
+    public function getThumbnailUrlAttribute(): ?string
+    {
+        if (!$this->thumbnail) return null;
+        return str_starts_with($this->thumbnail, 'http')
+            ? $this->thumbnail
+            : asset('storage/' . $this->thumbnail);
+    }
+
     public function getFileUrlAttribute(): ?string
     {
         if ($this->file_path) {

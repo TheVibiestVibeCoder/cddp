@@ -17,6 +17,14 @@ class CommentController extends Controller
             'parent_id' => 'nullable|exists:comments,id',
         ]);
 
+        if ($validated['parent_id'] ?? null) {
+            $parent = Comment::find($validated['parent_id']);
+            abort_if(
+                $parent->commentable_type !== Artifact::class || $parent->commentable_id !== $artifact->id,
+                422
+            );
+        }
+
         Comment::create([
             'body'             => $validated['body'],
             'user_id'          => auth()->id(),
