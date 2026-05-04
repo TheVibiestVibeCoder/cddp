@@ -22,7 +22,7 @@
     @if($browsing)
 
     {{-- ── Category browse ──────────────────────────────────────────── --}}
-    <div class="flex items-center justify-between mb-5">
+    <div class="flex items-center justify-between mb-8">
         <p class="text-sm text-ink-500">Browse by category</p>
         <a href="{{ route('data-room.index', ['sort' => 'latest']) }}"
            class="text-sm text-ink-500 hover:text-ink-950 transition-colors flex items-center gap-1">
@@ -34,34 +34,70 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         @foreach($categories as $cat)
         <a href="{{ route('data-room.index', ['category' => $cat->id]) }}"
-           class="card-hover group p-5 flex flex-col gap-3">
-            <div class="flex items-start justify-between gap-3">
+           class="card-hover group flex flex-col overflow-hidden">
+            @if($cat->cover_image_url)
+            {{-- Cover image header --}}
+            <div class="relative h-32 overflow-hidden flex-shrink-0">
+                <img src="{{ $cat->cover_image_url }}"
+                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="">
+                <div class="absolute inset-0 bg-gradient-to-b from-black/10 to-black/50"></div>
                 @if($cat->icon)
-                <span class="text-2xl leading-none">{{ $cat->icon }}</span>
-                @else
-                <div class="w-9 h-9 rounded-lg bg-ink-100 flex items-center justify-center flex-shrink-0">
-                    <svg class="w-4 h-4 text-ink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
-                    </svg>
+                <span class="absolute top-3 left-4 text-xl drop-shadow">{{ $cat->icon }}</span>
+                @endif
+            </div>
+            <div class="p-5 flex flex-col gap-2 flex-1">
+                <div class="flex items-start justify-between gap-3">
+                    <h3 class="text-sm font-semibold text-ink-950 group-hover:underline underline-offset-2 leading-snug">{{ $cat->name }}</h3>
+                    <span class="text-xs text-ink-400 font-medium tabular-nums flex-shrink-0 mt-0.5">
+                        {{ $cat->artifacts_count }} artifact{{ $cat->artifacts_count !== 1 ? 's' : '' }}
+                    </span>
+                </div>
+                @if($cat->description)
+                <p class="text-xs text-ink-500 line-clamp-2">{{ $cat->description }}</p>
+                @endif
+                @if($cat->children->isNotEmpty())
+                <div class="flex flex-wrap gap-1 mt-1">
+                    @foreach($cat->children->take(4) as $child)
+                    <span class="badge-outline text-[10px]">{{ $child->name }}</span>
+                    @endforeach
+                    @if($cat->children->count() > 4)
+                    <span class="text-[10px] text-ink-400">+{{ $cat->children->count() - 4 }} more</span>
+                    @endif
                 </div>
                 @endif
-                <span class="text-xs text-ink-400 font-medium tabular-nums mt-0.5 flex-shrink-0">
-                    {{ $cat->artifacts_count }} artifact{{ $cat->artifacts_count !== 1 ? 's' : '' }}
-                </span>
             </div>
-            <div class="flex-1">
-                <h3 class="text-sm font-semibold text-ink-950 group-hover:underline underline-offset-2">{{ $cat->name }}</h3>
-                @if($cat->description)
-                <p class="text-xs text-ink-500 mt-1 line-clamp-2">{{ $cat->description }}</p>
-                @endif
-            </div>
-            @if($cat->children->isNotEmpty())
-            <div class="flex flex-wrap gap-1">
-                @foreach($cat->children->take(4) as $child)
-                <span class="badge-outline text-[10px]">{{ $child->name }}</span>
-                @endforeach
-                @if($cat->children->count() > 4)
-                <span class="text-[10px] text-ink-400">+{{ $cat->children->count() - 4 }} more</span>
+            @else
+            {{-- No cover image: icon layout --}}
+            <div class="p-5 flex flex-col gap-3 flex-1">
+                <div class="flex items-start justify-between gap-3">
+                    @if($cat->icon)
+                    <span class="text-2xl leading-none">{{ $cat->icon }}</span>
+                    @else
+                    <div class="w-9 h-9 rounded-lg bg-ink-100 flex items-center justify-center flex-shrink-0">
+                        <svg class="w-4 h-4 text-ink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
+                        </svg>
+                    </div>
+                    @endif
+                    <span class="text-xs text-ink-400 font-medium tabular-nums mt-0.5 flex-shrink-0">
+                        {{ $cat->artifacts_count }} artifact{{ $cat->artifacts_count !== 1 ? 's' : '' }}
+                    </span>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-sm font-semibold text-ink-950 group-hover:underline underline-offset-2">{{ $cat->name }}</h3>
+                    @if($cat->description)
+                    <p class="text-xs text-ink-500 mt-1 line-clamp-2">{{ $cat->description }}</p>
+                    @endif
+                </div>
+                @if($cat->children->isNotEmpty())
+                <div class="flex flex-wrap gap-1">
+                    @foreach($cat->children->take(4) as $child)
+                    <span class="badge-outline text-[10px]">{{ $child->name }}</span>
+                    @endforeach
+                    @if($cat->children->count() > 4)
+                    <span class="text-[10px] text-ink-400">+{{ $cat->children->count() - 4 }} more</span>
+                    @endif
+                </div>
                 @endif
             </div>
             @endif
