@@ -47,7 +47,11 @@ class ArtifactController extends Controller
         };
 
         $artifacts = $query->paginate(12)->withQueryString();
-        $categories = Category::whereNull('parent_id')->with('children')->orderBy('order')->get();
+        $categories = Category::whereNull('parent_id')
+            ->with(['children' => fn($q) => $q->withCount(['artifacts' => fn($q2) => $q2->where('is_published', true)])])
+            ->withCount(['artifacts' => fn($q) => $q->where('is_published', true)])
+            ->orderBy('order')
+            ->get();
         $tags = Tag::orderBy('name')->get();
         $types = ['document', 'report', 'brief', 'video', 'image', 'link', 'dataset', 'other'];
 

@@ -15,6 +15,62 @@
         @endif
     </div>
 
+    @php
+        $browsing = !request()->hasAny(['search', 'type', 'category', 'tag', 'sort']) && $categories->isNotEmpty();
+    @endphp
+
+    @if($browsing)
+
+    {{-- ── Category browse ──────────────────────────────────────────── --}}
+    <div class="flex items-center justify-between mb-5">
+        <p class="text-sm text-ink-500">Browse by category</p>
+        <a href="{{ route('data-room.index', ['sort' => 'latest']) }}"
+           class="text-sm text-ink-500 hover:text-ink-950 transition-colors flex items-center gap-1">
+            View all artifacts
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        @foreach($categories as $cat)
+        <a href="{{ route('data-room.index', ['category' => $cat->id]) }}"
+           class="card-hover group p-5 flex flex-col gap-3">
+            <div class="flex items-start justify-between gap-3">
+                @if($cat->icon)
+                <span class="text-2xl leading-none">{{ $cat->icon }}</span>
+                @else
+                <div class="w-9 h-9 rounded-lg bg-ink-100 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 text-ink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
+                    </svg>
+                </div>
+                @endif
+                <span class="text-xs text-ink-400 font-medium tabular-nums mt-0.5 flex-shrink-0">
+                    {{ $cat->artifacts_count }} artifact{{ $cat->artifacts_count !== 1 ? 's' : '' }}
+                </span>
+            </div>
+            <div class="flex-1">
+                <h3 class="text-sm font-semibold text-ink-950 group-hover:underline underline-offset-2">{{ $cat->name }}</h3>
+                @if($cat->description)
+                <p class="text-xs text-ink-500 mt-1 line-clamp-2">{{ $cat->description }}</p>
+                @endif
+            </div>
+            @if($cat->children->isNotEmpty())
+            <div class="flex flex-wrap gap-1">
+                @foreach($cat->children->take(4) as $child)
+                <span class="badge-outline text-[10px]">{{ $child->name }}</span>
+                @endforeach
+                @if($cat->children->count() > 4)
+                <span class="text-[10px] text-ink-400">+{{ $cat->children->count() - 4 }} more</span>
+                @endif
+            </div>
+            @endif
+        </a>
+        @endforeach
+    </div>
+
+    @else
+
     <div class="flex flex-col lg:flex-row gap-6">
 
         <!-- ── Sidebar filters ─────────────────────────────────────────── -->
@@ -240,6 +296,16 @@
 
         <!-- ── Artifact grid ──────────────────────────────────────────── -->
         <div class="flex-1 min-w-0">
+
+            <!-- Back to categories -->
+            @if(request('category') && $categories->isNotEmpty())
+            <a href="{{ route('data-room.index') }}"
+               class="inline-flex items-center gap-1.5 text-sm text-ink-500 hover:text-ink-950 transition-colors mb-4">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+                All categories
+            </a>
+            @endif
+
             @if($artifacts->isEmpty())
             <div class="card p-12 text-center">
                 <svg class="w-12 h-12 text-ink-200 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
@@ -310,4 +376,6 @@
             @endif
         </div>
     </div>
+
+    @endif
 </x-app-layout>
