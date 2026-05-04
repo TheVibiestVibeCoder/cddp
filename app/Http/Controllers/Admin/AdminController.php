@@ -10,6 +10,7 @@ use App\Models\Category;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
@@ -108,11 +109,18 @@ class AdminController extends Controller
         $this->requireAdmin();
 
         $validated = $request->validate([
-            'name'        => 'required|string|max:100',
-            'description' => 'nullable|string',
-            'parent_id'   => 'nullable|exists:categories,id',
-            'icon'        => 'nullable|string|max:50',
+            'name'         => 'required|string|max:100',
+            'description'  => 'nullable|string',
+            'parent_id'    => 'nullable|exists:categories,id',
+            'icon'         => 'nullable|string|max:50',
+            'cover_image'  => 'nullable|image|max:5120',
         ]);
+
+        $coverImage = null;
+        if ($request->hasFile('cover_image')) {
+            Storage::disk('public')->makeDirectory('category-covers');
+            $coverImage = $request->file('cover_image')->store('category-covers', 'public') ?: null;
+        }
 
         Category::create([
             'name'        => $validated['name'],
@@ -120,9 +128,43 @@ class AdminController extends Controller
             'description' => $validated['description'] ?? null,
             'parent_id'   => $validated['parent_id'] ?? null,
             'icon'        => $validated['icon'] ?? null,
+            'cover_image' => $coverImage,
         ]);
 
         return back()->with('success', 'Category created.');
+    }
+
+    public function updateCategory(Request $request, Category $category)
+    {
+        $this->requireAdmin();
+
+        $validated = $request->validate([
+            'name'        => 'required|string|max:100',
+            'description' => 'nullable|string',
+            'parent_id'   => 'nullable|exists:categories,id',
+            'icon'        => 'nullable|string|max:50',
+            'cover_image' => 'nullable|image|max:5120',
+        ]);
+
+        $coverImage = $category->cover_image;
+        if ($request->hasFile('cover_image')) {
+            if ($coverImage && !str_starts_with($coverImage, 'http')) {
+                Storage::disk('public')->delete($coverImage);
+            }
+            Storage::disk('public')->makeDirectory('category-covers');
+            $coverImage = $request->file('cover_image')->store('category-covers', 'public') ?: $category->cover_image;
+        }
+
+        $category->update([
+            'name'        => $validated['name'],
+            'slug'        => \Illuminate\Support\Str::slug($validated['name']),
+            'description' => $validated['description'] ?? null,
+            'parent_id'   => $validated['parent_id'] ?? null,
+            'icon'        => $validated['icon'] ?? null,
+            'cover_image' => $coverImage,
+        ]);
+
+        return back()->with('success', 'Category updated.');
     }
 
     public function destroyCategory(Category $category)

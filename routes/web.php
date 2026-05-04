@@ -73,6 +73,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::delete('/users/{user}', [AdminController::class, 'destroyUser'])->name('users.destroy');
     Route::get('/categories', [AdminController::class, 'categories'])->name('categories');
     Route::post('/categories', [AdminController::class, 'storeCategory'])->name('categories.store');
+    Route::put('/categories/{category}', [AdminController::class, 'updateCategory'])->name('categories.update');
     Route::delete('/categories/{category}', [AdminController::class, 'destroyCategory'])->name('categories.destroy');
     Route::get('/tags', [AdminController::class, 'tags'])->name('tags');
     Route::post('/tags', [AdminController::class, 'storeTag'])->name('tags.store');
